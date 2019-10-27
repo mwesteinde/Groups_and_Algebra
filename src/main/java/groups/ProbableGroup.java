@@ -1,9 +1,10 @@
 package groups;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ProbableGroup {
+    Set<String> ourElements = new HashSet<>();
+    Map<Pair<String>, String> ourOpTable = new HashMap<>();
 
     /**
      * <p>Create an instance of ProbableGroup</p>
@@ -13,7 +14,8 @@ public class ProbableGroup {
      *                 and all pairs of `String`s in elements are keys in opTable
      */
     public ProbableGroup(Set<String> elements, Map<Pair<String>, String> opTable) {
-        // TODO: implement the constructor
+        ourElements = Set.copyOf(elements);
+        ourOpTable = Map.copyOf(opTable);
     }
 
 
@@ -23,8 +25,12 @@ public class ProbableGroup {
      * @return the set of elements in this instance of ProbableGroup
      */
     public Set<String> getElements() {
-        // TODO: implement this method
-        return null;
+        Set<String> returnedStringSet = new HashSet<>();
+        for (String s: ourElements) {
+            returnedStringSet.add(s);
+        }
+        return returnedStringSet;
+
     }
 
     /**
@@ -33,8 +39,12 @@ public class ProbableGroup {
      * @return the complete operation table for this instance of ProbableGroup
      */
     public Map<Pair<String>, String> getOpTable() {
-        // TODO: Implement this method
-        return null;
+        Map<Pair<String>, String> returnedMap = new HashMap<>();
+        Iterator<Map.Entry<Pair<String>, String>> it = ourOpTable.entrySet().iterator();
+        while (it.hasNext()) {
+            returnedMap.put(it.next().getKey(), it.next().getValue());
+        }
+        return returnedMap;
     }
 
     /**
@@ -45,8 +55,9 @@ public class ProbableGroup {
      * @return a * b
      */
     public String product(String a, String b) {
-        // TODO: Implement this method
-        return null;
+        Pair<String> pairInstance = new Pair<String>(a, b);
+        String s = ourOpTable.get(pairInstance);
+        return s;
     }
 
     /**
@@ -55,8 +66,23 @@ public class ProbableGroup {
      * @return the identity of the ProbableGroup if it exists, otherwise returns the empty String ("")
      */
     public String getIdentity() {
-        // TODO: Implement this method
-        return null;
+        String s = "";
+        int count = 0;
+        for (String str: ourElements) {
+            for (String str2 : ourElements) {
+                Pair<String> pairInstance = new Pair<String>(str2, str);
+                Pair<String> pairInstance1 = new Pair<String>(str, str2);
+                if (ourOpTable.get(pairInstance).equals(str2) && ourOpTable.get(pairInstance1).equals(str2)) {
+                    count ++;
+                    if (count == ourElements.size()) {
+                        s = str;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+        return s;
     }
 
     /**
@@ -66,8 +92,15 @@ public class ProbableGroup {
      * @return the inverse of a, a', such that a * a' = e if it exists, otherwise returns the empty String ("")
      */
     public String getInverse(String a) {
-        // TODO: Implement this method
-        return null;
+        String s = "";
+        for (String str: ourElements) {
+            Pair<String> pairInstance = new Pair<String>(a, str);
+            if (ourOpTable.get(pairInstance).equals(this.getIdentity())) {
+                s = str;
+            }
+        }
+
+        return s;
     }
 
     /**
@@ -78,8 +111,15 @@ public class ProbableGroup {
      * @return a^n
      */
     public String power(String a, int n) {
-        // TODO: Implement this method
-        return null;
+        String s;
+        String nextn = a;
+        String next2n;
+        for (int i = 1; i < n; i++) {
+            Pair<String> pairInstance = new Pair<String>(a, nextn);
+            nextn = ourOpTable.get(pairInstance);
+        }
+        s = nextn;
+        return s;
     }
 
     /**
@@ -91,8 +131,11 @@ public class ProbableGroup {
      * @return the order of element a in this ProbableGroup
      */
     public int order(String a) {
-        // TODO: Implement this method
-        return -1;
+        int m = 1;
+        while (!this.power(a,m).equals(this.getIdentity())) {
+            m++;
+        }
+        return m;
     }
 
     /**
@@ -101,8 +144,39 @@ public class ProbableGroup {
      * @return true if the ProbableGroup is a group, otherwise return false
      */
     public boolean isGroup() {
-        // TODO: Implement this method
-        return false;
+        for (String s : ourElements) {
+            for (String t: ourElements) {
+                for (String u: ourElements) {
+                    Pair<String> pair1 = new Pair(t, u);
+                    String result = ourOpTable.get(pair1);
+                    Pair<String> pair2 = new Pair(s, result);
+                    String result2 = ourOpTable.get(pair2);
+                    Pair<String> pair3 = new Pair(s, t);
+                    String result3 = ourOpTable.get(pair3);
+                    Pair<String> pair4 = new Pair(result3, u);
+                    String result4 = ourOpTable.get(pair4);
+                    if (!result2.equals(result4)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        for (String s: ourElements) {
+            if (getInverse(s).equals("")) {
+                return false;
+            }
+            for (String t: ourElements) {
+                if (!ourElements.contains(product(s,t))) {
+                    return false;
+                }
+            }
+        }
+        String identityCheck = getIdentity();
+        if (identityCheck.equals("")) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -111,8 +185,19 @@ public class ProbableGroup {
      * @return true if the Probable Group is commutative, otherwise return false
      */
     public boolean isCommutative() {
-        // TODO: Implement this method
-        return false;
+        for (String s: ourElements) {
+            for (String t: ourElements) {
+                Pair<String> pair1 = new Pair(s,t);
+                Pair<String> pair2 = new Pair(t,s);
+                if (!ourOpTable.get(pair1).equals(ourOpTable.get(pair2))) {
+                    return false;
+                }
+                if (!ourElements.contains(ourOpTable.get(pair1)) || !ourElements.contains(ourOpTable.get(pair2))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -122,7 +207,17 @@ public class ProbableGroup {
      * @return true if h is a subgroup of this instance, otherwise return false
      */
     public boolean isSubgroup(Set<String> h) {
-        // TODO: Implement this method
-        return false;
+        for (String s: h) {
+            if (!h.contains(getInverse(s))) {
+                return false;
+            }
+            for (String t: h) {
+                Pair<String> thisPair = new Pair (s, t);
+                if (!h.contains(ourOpTable.get(thisPair))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
