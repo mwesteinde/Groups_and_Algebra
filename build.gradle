@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'checkstyle'
 }
 
 group 'CPEN 221'
@@ -13,4 +14,20 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+task removeStudentTests(type: Delete) {
+    delete 'src/test/java'
+}
+
+task copyConfig(type: Copy) {
+    from '../config/checkstyle'
+    into 'config/checkstyle'
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled     true
+        html.enabled    true
+    }
 }
